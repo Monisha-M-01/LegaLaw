@@ -6,7 +6,7 @@ import DocumentViewer from './components/DocumentViewer';
 import SummaryView from './components/SummaryView';
 import { getLanguage } from './utils/session';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
   const [appState, setAppState] = useState('upload'); // 'upload' | 'processing' | 'viewer' | 'summary'
