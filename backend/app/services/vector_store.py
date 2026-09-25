@@ -1,6 +1,7 @@
 import chromadb
 from chromadb.config import Settings
 from app.config import get_genai_client
+from google.genai import types
 import os
 
 # Resolve chroma_data directory relative to the backend package root or cwd
@@ -21,18 +22,37 @@ collection = chroma_client.get_or_create_collection(
     metadata={"hnsw:space": "cosine"} # Use cosine similarity for the embeddings
 )
 
+import logging
+from concurrent.futures import ThreadPoolExecutor
+
+logger = logging.getLogger("ai_legal_assistant")
+
+def _embed_single(client, text: str) -> list[float]:
+    """Generates an embedding vector for a single text with dimension 384 matching ChromaDB."""
+    res = client.models.embed_content(
+        model="gemini-embedding-2",
+        contents=text,
+        config=types.EmbedContentConfig(output_dimensionality=384)
+    )
+    if hasattr(res, 'embeddings') and res.embeddings:
+        return res.embeddings[0].values
+    elif hasattr(res, 'embedding') and res.embedding:
+        return res.embedding.values
+    return []
+
 def embed_texts(texts: list[str]) -> list[list[float]]:
     """Generates embeddings for a list of strings."""
-    client = get_genai_client()
     if isinstance(texts, str):
         texts = [texts]
-    result = client.models.embed_content(
-        model="gemini-embedding-2",
-        contents=texts
-    )
-    if hasattr(result, 'embeddings') and isinstance(result.embeddings, list):
-        return [e.values for e in result.embeddings]
-    return [result.embeddings.values]
+    if not texts:
+        return []
+    client = get_genai_client()
+    if len(texts) == 1:
+        return [_embed_single(client, texts[0])]
+
+    with ThreadPoolExecutor(max_workers=min(10, len(texts))) as executor:
+        embeddings = list(executor.map(lambda t: _embed_single(client, t), texts))
+    return embeddings
 
 def store_chunks(document_id: str, chunks: list[dict]):
     """
