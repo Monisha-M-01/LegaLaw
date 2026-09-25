@@ -4,7 +4,6 @@ python-multipart
 pdfplumber
 python-docx
 chromadb
-sentence-transformers
 google-genai
 pydantic
 pytest

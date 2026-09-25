@@ -1,26 +1,38 @@
 import chromadb
 from chromadb.config import Settings
-from sentence_transformers import SentenceTransformer
+from app.config import get_genai_client
 import os
 
-# Initialize the embedding model (all-MiniLM-L6-v2)
-print("Loading sentence-transformers model...")
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+# Resolve chroma_data directory relative to the backend package root or cwd
+_BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_CWD_CHROMA = os.path.join(os.getcwd(), "chroma_data")
+_PKG_CHROMA = os.path.join(_BACKEND_DIR, "chroma_data")
+CHROMA_PATH = _PKG_CHROMA if os.path.exists(_PKG_CHROMA) else _CWD_CHROMA
 
-# Initialize ChromaDB client
-# This creates a local SQLite database in the 'chroma_data' folder
-chroma_client = chromadb.PersistentClient(path=os.path.join(os.getcwd(), "chroma_data"))
+# Initialize ChromaDB client with persistent local SQLite storage
+chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
-# Create or get the collection for legal documents
+# Create or get the collection for legal documents.
+# Explicitly set embedding_function=None because embeddings are generated via Gemini API (gemini-embedding-2).
+# This avoids ChromaDB loading heavy ONNX runtime and default models into memory.
 collection = chroma_client.get_or_create_collection(
     name="legal_documents",
+    embedding_function=None,
     metadata={"hnsw:space": "cosine"} # Use cosine similarity for the embeddings
 )
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
     """Generates embeddings for a list of strings."""
-    embeddings = embedding_model.encode(texts)
-    return embeddings.tolist()
+    client = get_genai_client()
+    if isinstance(texts, str):
+        texts = [texts]
+    result = client.models.embed_content(
+        model="gemini-embedding-2",
+        contents=texts
+    )
+    if hasattr(result, 'embeddings') and isinstance(result.embeddings, list):
+        return [e.values for e in result.embeddings]
+    return [result.embeddings.values]
 
 def store_chunks(document_id: str, chunks: list[dict]):
     """
@@ -105,6 +117,7 @@ def retrieve_relevant_chunks(query: str, n_results: int = 5, document_id: str = 
 
 statute_collection = chroma_client.get_or_create_collection(
     name="statute_reference",
+    embedding_function=None,
     metadata={"hnsw:space": "cosine"}
 )
 

@@ -5,7 +5,9 @@ from datetime import datetime
 import os
 
 # Create an SQLite database in the backend directory
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+_BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DB_PATH = os.path.join(_BACKEND_DIR, "sql_app.db")
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{_DB_PATH}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
