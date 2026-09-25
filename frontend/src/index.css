@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-ink;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent text-white font-sans font-medium px-6 py-3 rounded-md border-2 border-ink shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none hover:brightness-110;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-ink font-sans font-medium px-6 py-3 rounded-md border-2 border-ink shadow-hard transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none hover:bg-gray-50;
+  }
+
+  .flat-block {
+    @apply bg-white border-2 border-ink;
+  }
+
+  /* Tag colors */
+  .tag-safe {
+    @apply bg-safe text-ink border-2 border-ink rounded-md;
+  }
+  
+  .tag-caution {
+    @apply bg-caution text-ink border-2 border-ink rounded-md;
+  }
+  
+  .tag-flag {
+    @apply bg-flag text-ink border-2 border-ink rounded-md;
+  }
+}
+
+/* Custom scrollbar for plain-text panes to look clean */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 4px;
+}
