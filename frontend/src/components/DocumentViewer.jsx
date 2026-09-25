@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Info, ShieldAlert, ShieldCheck, AlertTriangle, MessageSquare, Scale, Loader2, X, AlertCircle } from 'lucide-react';
 import ChatPanel from './ChatPanel';
 import LanguageSelector from './LanguageSelector';
+import { API_BASE_URL } from '../config';
 
 export default function DocumentViewer({ onBack, onSummary, documentName, documentId, documentData }) {
   const [activeTab, setActiveTab] = useState('simplified'); // for mobile
@@ -35,7 +36,7 @@ export default function DocumentViewer({ onBack, onSummary, documentName, docume
     setIsTranslating(true);
     setSelectedLang(langCode);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/documents/${documentId}/translate`, {
+      const response = await fetch(`${API_BASE_URL}/documents/${documentId}/translate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_language: langCode })
@@ -67,7 +68,7 @@ export default function DocumentViewer({ onBack, onSummary, documentName, docume
     if (verdictData) return;
     setVerdictLoading(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/documents/${documentId}/verdict`);
+      const response = await fetch(`${API_BASE_URL}/documents/${documentId}/verdict`);
       if (!response.ok) {
         let detail = 'Failed to generate verdict. Please try again.';
         try {

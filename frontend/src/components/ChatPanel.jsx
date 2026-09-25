@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, X, HelpCircle, FileText, BookOpen } from 'lucide-react';
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+import { API_BASE_URL } from '../config';
 
 export default function ChatPanel({ isOpen, onClose, onClauseClick, initialInput = "", documentId, initialConversation = [], targetLanguage = 'en' }) {
   const [inputValue, setInputValue] = useState("");
